@@ -188,11 +188,6 @@ brfss %>% filter(year == c(2006, 2010), state_abb == "NY") %>%
     name = "Location",
     discrete = TRUE
   )
-
-brfss %>% filter(year == c(2006, 2010), state_abb == "NY") %>% 
-  group_by(county, response) %>% 
-  select(year, county, response, data_value) %>% 
-  group_by(county)
 ```
 In both 2006 and 2010, "good" and "very good" responses had on average higher data values than "excellent" responses. There is a smaller spread in response "very good" in 2010 compared to "very good" in 2006, and poor responses have a greater spread in 2010 compared to poor reponses in 2006. Both graphs show the same overall trend with a general increase from Poor -- Very Good and a slight decrease for excellent responses. Counties who were interview in 2006 were not neccessarily interviewed in 2010, which could introduce some data discrepancies when comparing the data vales between the two years. 
 
@@ -216,7 +211,7 @@ The dataset consists of 1444 variables, a week variable ranging from 1-5, a day 
 
 Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
 ```{r}
-accel_data_total = accel_data %>% 
+accel_data %>% 
   mutate(
     total_activity = rowSums(accel_data[, grep("activity_", names(accel_data))])
   ) %>% 
@@ -226,7 +221,7 @@ accel_data_total = accel_data %>%
   pivot_wider(
     names_from = "day_ordered",
     values_from = "total_activity"
-  ) %>% view()
+  ) %>% formattable::formattable(col.names = c("Week", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
 
 accel_data %>% 
   mutate(
