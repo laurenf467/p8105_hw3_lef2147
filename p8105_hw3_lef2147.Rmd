@@ -4,7 +4,7 @@ author: "lauren franks, lef2147"
 date: "10/3/2019"
 output: github_document
 ---
-
+ 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -211,8 +211,6 @@ accel_data = accel_data %>% janitor::clean_names() %>%
     day_ordered = factor(day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"), ordered = TRUE)
   ) %>% 
   select(week, day_id, day, day_ordered, weekend, activity_1:activity_1440)
-
-str(accel_data)
 ```
 The dataset consists of 1444 variables, a week variable ranging from 1-5, a day ID variable ranging from 1-35, a day variable indicating which day of the week it is, a weekend variable indicate if it is a weekend observation or weekday observation, and 1440 variables for each minute of the day that measures activity count. There are 35 observations for 35 days. 
 
