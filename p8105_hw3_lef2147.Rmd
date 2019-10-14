@@ -8,6 +8,13 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.width = 9,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
 library(dplyr)
 library(ggplot2)
 library(viridis)
@@ -101,5 +108,87 @@ instacart %>% select(order_dow, order_hour_of_day, product_name) %>%
     values_from = mean_hour
   ) %>% knitr::kable(col.names = c("Product Name", "Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"))
 ```
+
+
+Question 2
+Loading Data
+```{r}
+data("brfss_smart2010")
+
+str(brfss_smart2010)
+```
+
+Data Cleaning
+ - format the data to use appropriate variable names
+ - focus on the “Overall Health” topic
+ - include only responses from “Excellent” to “Poor”
+ - organize responses as a factor taking levels ordered from “Poor” to “Excellent”
+```{r}
+brfss = janitor::clean_names(brfss_smart2010) %>% 
+  rename(
+    state_abb = locationabbr,
+    county = locationdesc
+  ) %>% 
+  filter(topic == "Overall Health") %>% 
+  mutate(
+    response = as.factor(response),
+    response = factor(response, levels = c("Poor", "Fair", "Good", "Very good", "Excellent"), ordered = TRUE)
+    ) %>% 
+  arrange(response)
+```
+
+Questions:
+In 2002, which states were observed at 7 or more locations? What about in 2010?
+```{r}
+brfss %>% filter(year == 2002) %>% 
+  group_by(county, state_abb) %>% 
+  summarise(n_obs = 1) %>% 
+  group_by(state_abb) %>% 
+  summarise(sum_loc = sum(n_obs)) %>% 
+  subset(sum_loc >= 7)
+
+brfss %>% filter(year == 2010) %>% 
+  group_by(county, state_abb) %>% 
+  summarise(n_obs = 1) %>% 
+  group_by(state_abb) %>% 
+  summarise(sum_loc = sum(n_obs)) %>% 
+  subset(sum_loc >= 7)
+```
+In 2002, there were 6 states observed at 7 or more locations (CT, FL, MA, NC, NJ, and PA), and in 2010 there were 14 states (CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX and WA). 
+
+Construct a dataset that is limited to Excellent responses, and contains year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+```{r}
+brfss_exc = brfss %>% filter(response == "Excellent") %>% 
+  select(year, state_abb, county, data_value) %>% 
+  group_by(state_abb, year) %>% 
+  summarise(
+    avg_data_value = mean(data_value, na.rm = TRUE)
+  )
+
+brfss_exc %>% ggplot(aes(year, avg_data_value, group = state_abb)) + 
+  geom_line() + labs(
+    title = "Average Data Value By State",
+    subtitle = "For Response = Excellent",
+    x = "Year",
+    y = "Average Data Value"
+  )
+```
+
+Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+```{r}
+brfss %>% filter(year == c(2006, 2010), state_abb == "NY") %>% 
+  group_by(county, response) %>% 
+  select(year, county, response, data_value) %>% 
+  ggplot(aes(response, data_value, group = county, color = county)) + 
+  geom_point() +
+  facet_grid(~year) +
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  )
+```
+
+
+
 
 
